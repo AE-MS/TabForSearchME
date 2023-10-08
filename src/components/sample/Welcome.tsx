@@ -1,21 +1,30 @@
 import { useContext, useState } from "react";
 import {
   Image,
-  TabList,
-  Tab,
   SelectTabEvent,
   SelectTabData,
   TabValue,
 } from "@fluentui/react-components";
 import "./Welcome.css";
-import { EditCode } from "./EditCode";
-import { AzureFunctions } from "./AzureFunctions";
-import { CurrentUser } from "./CurrentUser";
 import { useData } from "@microsoft/teamsfx-react";
-import { Deploy } from "./Deploy";
-import { Publish } from "./Publish";
 import { TeamsFxContext } from "../Context";
-import { app } from "@microsoft/teams-js";
+import { FrameContexts, app, dialog, version } from "@microsoft/teams-js";
+
+function submitAndRequestUrlDialog() {
+  dialog.url.submit("requestUrl");
+}
+
+function submitAndRequestCardDialog() {
+  dialog.url.submit("requestCard");
+}
+
+function submitAndRequestMessageDialog() {
+  dialog.url.submit("requestMessage");
+}
+
+function submitAndRequestNoResponse() {
+  dialog.url.submit("requestNoResponse");
+}
 
 export function Welcome(props: { showFunction?: boolean; environment?: string }) {
   const { showFunction, environment } = {
@@ -42,51 +51,37 @@ export function Welcome(props: { showFunction?: boolean; environment?: string })
     }
   });
   const userName = loading || error ? "" : data!.displayName;
-  const hubName = useData(async () => {
+  const context = useData(async () => {
     await app.initialize();
     const context = await app.getContext();
-    return context.app.host.name;
+    return context;
   })?.data;
+
+  const hubName: string | undefined = context?.app.host.name;
+  const frameContext: FrameContexts | undefined = context?.page.frameContext;
+  const cardDialogsIsSupported: boolean | undefined = context === undefined ? undefined : dialog.adaptiveCard.isSupported();
+
   return (
     <div className="welcome page">
       <div className="narrow page-padding">
         <Image src="hello.png" />
         <h1 className="center">Congratulations{userName ? ", " + userName : ""}!</h1>
-        {hubName && <p className="center">Your app is running in {hubName}</p>}
+        {hubName && <p className="center">This is a URL dialog running in {hubName}</p>}
         <p className="center">Your app is running in your {friendlyEnvironmentName}</p>
+        <p className="center">TeamsJS version: {version}</p>
+        <p className="center">Card Dialogs is supported: {cardDialogsIsSupported ? "true" : "false"}</p>
+        <p className="center">The context frame context is {frameContext}</p>
+        <p className="center">The current URL is {window.location.href}</p>
 
-        <div className="tabList">
-          <TabList selectedValue={selectedValue} onTabSelect={onTabSelect}>
-            <Tab id="Local" value="local">
-              1. Build your app locally
-            </Tab>
-            <Tab id="Azure" value="azure">
-              2. Provision and Deploy to the Cloud
-            </Tab>
-            <Tab id="Publish" value="publish">
-              3. Publish to Teams
-            </Tab>
-          </TabList>
+        { frameContext === FrameContexts.task && (
           <div>
-            {selectedValue === "local" && (
-              <div>
-                <EditCode showFunction={showFunction} />
-                <CurrentUser userName={userName} />
-                {showFunction && <AzureFunctions />}
-              </div>
-            )}
-            {selectedValue === "azure" && (
-              <div>
-                <Deploy />
-              </div>
-            )}
-            {selectedValue === "publish" && (
-              <div>
-                <Publish />
-              </div>
-            )}
+            <button onClick={submitAndRequestUrlDialog}>Submit And Request URL Dialog</button>
+            <button onClick={submitAndRequestCardDialog}>Submit And Request Card Dialog</button>
+            <button onClick={submitAndRequestMessageDialog}>Submit And Request Message Dialog</button>
+            <button onClick={submitAndRequestNoResponse}>Submit And Request No Response</button>
           </div>
-        </div>
+        )}
+
       </div>
     </div>
   );
