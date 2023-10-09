@@ -8,22 +8,26 @@ import {
 import "./Welcome.css";
 import { useData } from "@microsoft/teamsfx-react";
 import { TeamsFxContext } from "../Context";
-import { FrameContexts, app, dialog, version } from "@microsoft/teams-js";
+import { FrameContexts, app, authentication, dialog, version } from "@microsoft/teams-js";
 
 function submitAndRequestUrlDialog() {
-  dialog.url.submit("requestUrl");
+  dialog.url.submit({ data: "requestUrl" });
 }
 
 function submitAndRequestCardDialog() {
-  dialog.url.submit("requestCard");
+  dialog.url.submit({ data: "requestCard" });
 }
 
 function submitAndRequestMessageDialog() {
-  dialog.url.submit("requestMessage");
+  dialog.url.submit({ data: "requestMessage" });
 }
 
 function submitAndRequestNoResponse() {
-  dialog.url.submit("requestNoResponse");
+  dialog.url.submit({ data: "requestNoResponse" });
+}
+
+function submitConfig() {
+  authentication.notifySuccess((document.getElementById('configValue') as HTMLInputElement).value)
 }
 
 export function Welcome(props: { showFunction?: boolean; environment?: string }) {
@@ -61,6 +65,9 @@ export function Welcome(props: { showFunction?: boolean; environment?: string })
   const frameContext: FrameContexts | undefined = context?.page.frameContext;
   const cardDialogsIsSupported: boolean | undefined = context === undefined ? undefined : dialog.adaptiveCard.isSupported();
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const pageQueryParamValue = urlParams.get('page');
+
   return (
     <div className="welcome page">
       <div className="narrow page-padding">
@@ -79,6 +86,13 @@ export function Welcome(props: { showFunction?: boolean; environment?: string })
             <button onClick={submitAndRequestCardDialog}>Submit And Request Card Dialog</button>
             <button onClick={submitAndRequestMessageDialog}>Submit And Request Message Dialog</button>
             <button onClick={submitAndRequestNoResponse}>Submit And Request No Response</button>
+          </div>
+        )}
+
+        { pageQueryParamValue === 'config' && (
+          <div>
+            <input id="configValue" type="text" placeholder="Enter your config value" />
+            <input type="button" value="Submit Configuration" onClick={submitConfig} />
           </div>
         )}
 
