@@ -89,7 +89,7 @@ export function Welcome(props: { showFunction?: boolean; environment?: string })
           </div>
         )}
 
-        { pageQueryParamValue === 'config' && (
+        { context !== undefined && pageQueryParamValue === 'config' && (
           <div>
             <input id="configValue" type="text" placeholder="Enter your config value" />
             <input type="button" value="Submit Configuration" onClick={submitConfig} />
