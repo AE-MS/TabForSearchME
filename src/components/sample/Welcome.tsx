@@ -79,6 +79,7 @@ export function Welcome(props: { showFunction?: boolean; environment?: string })
         <p className="center">Card Dialogs is supported: {cardDialogsIsSupported ? "true" : "false"}</p>
         <p className="center">The context frame context is {frameContext}</p>
         <p className="center">The current URL is {window.location.href}</p>
+        <p className="center">This is an {pageQueryParamValue} page</p>       
 
         { frameContext === FrameContexts.task && (
           <div>
@@ -89,10 +90,10 @@ export function Welcome(props: { showFunction?: boolean; environment?: string })
           </div>
         )}
 
-        { context !== undefined && pageQueryParamValue === 'config' && (
+        { context !== undefined && (pageQueryParamValue === 'config' || pageQueryParamValue === 'auth') && (
           <div>
-            <input id="configValue" type="text" placeholder="Enter your config value" />
-            <input type="button" value="Submit Configuration" onClick={submitConfig} />
+            <input id="configValue" type="text" placeholder={ pageQueryParamValue === 'config' ? "Enter your config value" : "Enter your auth code"  } />
+            <input type="button" value={ pageQueryParamValue === 'config' ? "Submit Configuration" : "Submit auth code"  } onClick={submitConfig} />
           </div>
         )}
 
